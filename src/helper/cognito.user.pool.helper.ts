@@ -1,5 +1,5 @@
 import 'cross-fetch/polyfill';
-import { USER_POOL_ID, CLIENT_ID } from './config';
+import { USER_POOL_ID, CLIENT_ID } from '../config/config';
 import { AuthenticationDetails, CognitoUser, CognitoUserAttribute, CognitoUserPool } from 'amazon-cognito-identity-js';
 
 export interface IUserToken {
@@ -31,7 +31,6 @@ class CognitoUserPoolHelper {
                 if(err) {
                     return reject(err);
                 }
-                console.log(result);
                 resolve(result?.user.getUsername() || '');
             })
         })

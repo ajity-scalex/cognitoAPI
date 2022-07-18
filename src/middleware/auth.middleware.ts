@@ -1,6 +1,6 @@
 import {Handler, Request} from 'express';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
-import {REGION} from './config';
+import {REGION} from '../config/config';
 
 const identityServiceProvider = new CognitoIdentityServiceProvider({
     region: REGION

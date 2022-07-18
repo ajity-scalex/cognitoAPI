@@ -1,6 +1,6 @@
 import express from 'express';
-import { IAuthenticatedRequest } from './auth.middleware';
-import cognitoUserPoolHelper from './cognito.user.pool.helper';
+import { IAuthenticatedRequest } from '../middleware/auth.middleware';
+import cognitoUserPoolHelper from '../helper/cognito.user.pool.helper';
 
 interface IUserController {
     signUp: express.Handler,
