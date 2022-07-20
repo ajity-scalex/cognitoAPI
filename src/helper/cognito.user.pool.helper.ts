@@ -1,6 +1,8 @@
 import 'cross-fetch/polyfill';
-import { USER_POOL_ID, CLIENT_ID } from '../config/config';
+import { USER_POOL_ID, CLIENT_ID, REGION } from '../config/config';
 import { AuthenticationDetails, CognitoUser, CognitoUserAttribute, CognitoUserPool } from 'amazon-cognito-identity-js';
+import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import signupHelper from './signup.helper';
 
 export interface IUserToken {
     accessToken: string;
@@ -17,15 +19,31 @@ class CognitoUserPoolHelper {
       });  
     }
     
-    public signUp(email: string, password: string): Promise<string> {
-        return new Promise((resolve, reject) => {
+    public signUp(name: string, email: string, gender: string, city: string, password: string): Promise<string> {
+        return new Promise( (resolve, reject) => {
+          const datanName = {
+            Name: 'name',
+            Value: name
+          }
+          const dataEmail = {
+            Name: 'email',
+            Value: email
+          }
+          const dataGender = {
+            Name: 'gender',
+            Value: gender
+          }
+          const dataCity = {
+            Name: 'custom:city',
+            Value: city
+          }
+          const attributeEmail = new CognitoUserAttribute(dataEmail);
+          const attributeGender = new CognitoUserAttribute(dataGender);
+          const attributeCity = new CognitoUserAttribute(dataCity);
+          const attributeName = new CognitoUserAttribute(datanName);
 
-            const attributeList: CognitoUserAttribute[] = [
-                new CognitoUserAttribute({
-                    Name: 'email',
-                    Value: email
-                })
-            ];
+          
+            const attributeList: CognitoUserAttribute[] = [attributeEmail,attributeCity,attributeGender, attributeName];
 
             this.userPool.signUp(email, password, attributeList, [], (err, result) => {
                 if(err) {
@@ -54,7 +72,7 @@ class CognitoUserPoolHelper {
         })
     }
 
-    public signIn( email: string, password: string ) : Promise<IUserToken> {
+    public signIn( email: string, password: string ) : Promise<IUserToken>{
         return new Promise((resolve, reject) => {
             const cognitoUser = new CognitoUser({
               Username: email,
@@ -65,21 +83,40 @@ class CognitoUserPoolHelper {
                 Username: email,
                 Password: password,
               });
-
               cognitoUser.authenticateUser(authenticationDetails, {
-                onSuccess: (session) => {
-                  resolve({
+     
+                onSuccess: (session) => { 
+                    console.log(session);                    
+                    resolve({
                     accessToken: session.getAccessToken().getJwtToken(),
                     refreshToken: session.getRefreshToken().getToken(),
                   });
                 },
 
                 onFailure: (err) => {
+                  if(err.code == 'UserNotConfirmedException'){
+
+                  }
+                  // console.log(err);
                   reject(err);
                 },
               });
             });
           }
+
+    public resendCode(email: string) {
+      const cognitoUser = new CognitoUser({
+        Username: email,
+        Pool: this.userPool,
+      });
+      cognitoUser.resendConfirmationCode(function(err, result) {
+        if (err) {
+            alert(err.message || JSON.stringify(err));
+            return;
+        }
+        console.log('call result: ' + result);
+    });
+    }
     
 }
 export default new CognitoUserPoolHelper();
