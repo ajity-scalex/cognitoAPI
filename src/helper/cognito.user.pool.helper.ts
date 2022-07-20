@@ -94,9 +94,6 @@ class CognitoUserPoolHelper {
                 },
 
                 onFailure: (err) => {
-                  if(err.code == 'UserNotConfirmedException'){
-
-                  }
                   // console.log(err);
                   reject(err);
                 },

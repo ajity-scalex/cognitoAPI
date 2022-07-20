@@ -1,5 +1,6 @@
 
 import mysql from 'mysql2';
+import { Sequelize } from 'sequelize';
 import {DB_HOST, DB_NAME, DB_PASSWORD, DB_USER} from '../config/config';
 
 const params = {
@@ -9,34 +10,39 @@ const params = {
   database: DB_NAME,
 };
 
-const Connect = async () => {
-  return new Promise<mysql.Connection>((resolve, reject) => {
-    const connection = mysql.createConnection(params);
-
-    connection.connect((error) => {
-      if (error) {
-        reject(error);
-        return;
+const getConnection = () => {
+  try {
+    const sequelize =  new Sequelize( params.database, params.user, params.password, {
+        host: params.host,
+        dialect: "mysql",
       }
-
-      resolve(connection);
-    });
-  });
+    );
+    return sequelize;
+  } catch (error) {
+    console.error('Error connecting DB. Check credentials');
+    throw error;
+  }
 };
+  
+const testConnection = async (sequelize: Sequelize) =>{
+  try{
+    await sequelize.authenticate();
+    console.log('connection has been established');
+  } catch(error) {
+    console.error('unable to connect to the database:',error);
+  }
+  
+}
 
-const Query = async (connection: mysql.Connection, query: string) => {
-  return new Promise((resolve, reject) => {
-    connection.query(query, connection, (error, result) => {
-      if (error) {
-        reject(error);
-        return;
-      }
+const closeConnection = async (sequelize: Sequelize) =>{
+  try{
+    await sequelize.close();
+  }catch(error) {
+    console.error('Not able to close connection');
+  }
+}
 
-      resolve(result);
-    });
-  });
-};
 
-export { Connect, Query};
+export { getConnection ,testConnection, closeConnection};
 
 
